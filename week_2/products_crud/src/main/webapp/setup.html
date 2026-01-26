@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Setup Hướng dẫn</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 30px; }
+        h2 { color: #555; margin-top: 25px; margin-bottom: 15px; border-left: 4px solid #007bff; padding-left: 12px; }
+        p { line-height: 1.6; color: #666; margin-bottom: 10px; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 10px 0; }
+        .step { background: #f9f9f9; padding: 15px; margin: 15px 0; border-left: 3px solid #007bff; }
+        .success { color: #28a745; }
+        .warning { color: #ff6b6b; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .button { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border-radius: 5px; text-decoration: none; }
+        .button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Hướng dẫn cài đặt CRUD Products</h1>
+
+    <h2>Bước 1: Tạo Database và Bảng</h2>
+    <p>Mở MySQL Workbench hoặc Command Line và thực hiện các lệnh sau:</p>
+    <div class="step">
+            <pre>CREATE DATABASE shop_db;
+USE shop_db;
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DOUBLE NOT NULL,
+    url_image VARCHAR(500)
+);
+
+INSERT INTO products (name, price, url_image) VALUES
+('Laptop Dell XPS', 25000000, 'https://link-anh-1.jpg'),
+('iPhone 15 Pro', 28000000, 'https://link-anh-2.jpg');</pre>
+    </div>
+
+    <h2>Bước 2: Kiểm tra Cấu hình MySQL</h2>
+    <p>Mở tệp <code>ProductDAO.java</code> và kiểm tra:</p>
+    <div class="step">
+            <pre>private static final String URL = "jdbc:mysql://localhost:3307/shop_db";
+private static final String USER = "root";
+private static final String PASS = "";</pre>
+    </div>
+    <p>Đảm bảo:</p>
+    <ul>
+        <li>Port MySQL là <strong>3307</strong> (hoặc thay đổi nếu cần)</li>
+        <li>Username là <strong>root</strong></li>
+        <li>Password trống <strong>""</strong> (nếu khác, hãy cập nhật)</li>
+    </ul>
+
+    <h2>Bước 3: Chạy ứng dụng</h2>
+    <p>Sau khi triển khai lên server Tomcat:</p>
+    <div class="step">
+        <p><strong>Kiểm tra kết nối database:</strong><br>
+            <a href="/products/test-connect" class="button">Kiểm tra Kết nối</a></p>
+    </div>
+
+    <h2>Bước 4: Truy cập trang quản lý sản phẩm</h2>
+    <div class="step">
+        <p><a href="/products/list" class="button">Vào Danh sách Sản phẩm</a></p>
+    </div>
+
+    <h2>Lỗi thường gặp:</h2>
+    <div class="step">
+        <p><span class="warning">❌ "Chưa có sản phẩm nào"</span></p>
+        <ul>
+            <li>Kiểm tra database đã được tạo chưa</li>
+            <li>Kiểm tra dữ liệu mẫu đã được chèn chưa</li>
+            <li>Xem <a href="/test-connect">Kiểm tra kết nối</a></li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <p><span class="warning">❌ "Connection failed"</span></p>
+        <ul>
+            <li>Kiểm tra MySQL có đang chạy không</li>
+            <li>Kiểm tra port MySQL (mặc định 3306, dự án này dùng 3307)</li>
+            <li>Kiểm tra username/password trong ProductDAO.java</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <p><span class="warning">❌ "Table 'products' doesn't exist"</span></p>
+        <ul>
+            <li>Kiểm tra database shop_db đã được tạo chưa</li>
+            <li>Chạy lại câu lệnh CREATE TABLE ở Bước 1</li>
+        </ul>
+    </div>
+
+    <h2>MySQL Port 3307 là gì?</h2>
+    <p>Dự án này sử dụng port 3307 thay vì port mặc định 3306. Nếu MySQL của bạn chạy trên port khác:</p>
+    <div class="step">
+        <p>1. Mở <code>ProductDAO.java</code></p>
+        <p>2. Thay đổi dòng:</p>
+        <pre>private static final String URL = "jdbc:mysql://localhost:3307/shop_db";</pre>
+        <p>thành:</p>
+        <pre>private static final String URL = "jdbc:mysql://localhost:3306/shop_db";</pre>
+        <p style="margin-top: 10px;">3. Compile lại dự án</p>
+    </div>
+</div>
+</body>
+</html>
