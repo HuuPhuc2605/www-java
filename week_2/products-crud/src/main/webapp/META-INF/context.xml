@@ -1,0 +1,9 @@
+<Context>
+    <Resource name="jdbc/shop_db"
+              auth="Container"
+              type="javax.sql.DataSource"
+              username="root"
+              password="260504"
+              driverClassName="org.mariadb.jdbc.Driver"
+              url="jdbc:mariadb://localhost:3306/shop_db"/>
+</Context>
