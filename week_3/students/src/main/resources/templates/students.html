@@ -61,6 +61,7 @@
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
+            gap: 10px;
         }
 
         table th {
@@ -79,6 +80,31 @@
             margin: 2px;
             border-radius: 12px;
             font-size: 13px;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: black;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
         }
 
         .actions {
@@ -119,6 +145,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Subjects</th>
+            <th>Action</th>
         </tr>
         </thead>
 
@@ -129,6 +156,20 @@
             <td class="subjects">
                 <span th:each="sub : ${s.subjects}"
                       th:text="${sub.name}"></span>
+            </td>
+            <td>
+                <!-- ✏️ Sửa -->
+                <a class="btn-edit"
+                   th:href="@{/students/edit/{id}(id=${s.id})}">
+                    Edit
+                </a>
+
+                <!-- 🗑️ Xóa -->
+                <a class="btn-delete"
+                   th:href="@{/students/delete/{id}(id=${s.id})}"
+                   onclick="return confirm('Are you sure you want to delete this student?');">
+                    Delete
+                </a>
             </td>
         </tr>
         </tbody>
