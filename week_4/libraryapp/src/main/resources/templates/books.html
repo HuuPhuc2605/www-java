@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Library</title>
+    <style>
+        body { font-family: Arial; background: #f4f4f4; }
+        .container { width: 80%; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        h2 { color: #333; }
+        input, select, button { padding: 8px; margin: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
+        th { background: #007bff; color: white; }
+        .success { color: green; }
+        .btn { padding: 6px 10px; text-decoration: none; border-radius: 5px; }
+        .edit { background: orange; color: white; }
+        .delete { background: red; color: white; }
+    </style>
+    <script>
+        function confirmDelete(id) {
+            if (confirm("Bạn có chắc muốn xóa không?")) {
+                window.location.href = "/books/delete/" + id;
+            }
+        }
+    </script>
+    <script>
+        function validateForm() {
+            let price = document.querySelector('[name="price"]').value;
+            let year = document.querySelector('[name="publishedYear"]').value;
+
+            // PRICE >= 0
+            if (price < 0) {
+                alert("Giá không được âm!");
+                return false;
+            }
+
+            // YEAR phải hợp lệ
+            if (year < 1900 || year > 2100) {
+                alert("Năm phải từ 1900 - 2100!");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Library Management</h2>
+
+    <p th:if="${param.success}" class="success">Thêm thành công!</p>
+
+    <!-- SEARCH -->
+    <form action="/books/search">
+        <input type="text" name="keyword" placeholder="Search...">
+        <button>Search</button>
+        <a href="/books">Reset</a>
+    </form>
+
+    <!-- FILTER -->
+    <form action="/books/filter">
+        <select name="name">
+            <option value="">-- Category --</option>
+            <option th:each="c : ${categories}"
+                    th:value="${c.name}"
+                    th:text="${c.name}">
+            </option>
+        </select>
+        <button>Filter</button>
+    </form>
+
+    <!-- ADD -->
+    <form th:action="@{/books/save}" th:object="${book}" method="post" onsubmit="return validateForm()">
+
+        <input th:field="*{title}" placeholder="Title" required>
+
+        <input th:field="*{author}" placeholder="Author" required>
+
+        <!-- PRICE -->
+        <input type="number" th:field="*{price}" placeholder="Price" min="0" required>
+
+        <!-- YEAR -->
+        <input type="number" th:field="*{publishedYear}" placeholder="Year" min="1900" max="2100" required>
+
+        <select th:field="*{category.id}" required>
+            <option value="">-- Category --</option>
+            <option th:each="c : ${categories}"
+                    th:value="${c.id}"
+                    th:text="${c.name}">
+            </option>
+        </select>
+
+        <button>Add</button>
+    </form>
+    <!-- NOT FOUND -->
+    <p th:if="${#lists.isEmpty(list)}" class="notfound">
+         Không tìm thấy dữ liệu
+    </p>
+
+    <!-- TABLE -->
+    <table>
+        <tr>
+            <th>ID</th><th>Title</th><th>Author</th>
+            <th>Price</th><th>Year</th><th>Category</th><th>Action</th>
+        </tr>
+
+        <tr th:each="b : ${list}">
+            <td th:text="${b.id}"></td>
+            <td th:text="${b.title}"></td>
+            <td th:text="${b.author}"></td>
+            <td th:text="${b.price}"></td>
+            <td th:text="${b.publishedYear}"></td>
+            <td th:text="${b.category.name}"></td>
+
+            <td>
+                <a th:href="@{'/books/edit/' + ${b.id}}" class="btn edit">Edit</a>
+                <a href="javascript:void(0)"
+                   th:onclick="'confirmDelete(' + ${b.id} + ')'"
+                   class="btn delete">
+                    Delete
+                </a>            </td>
+        </tr>
+    </table>
+
+</div>
+</body>
+</html>

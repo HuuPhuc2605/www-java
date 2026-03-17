@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Management</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 8px;
+            width: 95%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .search-btn {
+            background: #007bff;
+        }
+
+        .search-btn:hover {
+            background: #0069d9;
+        }
+
+        .reset-btn {
+            background: #dc3545;
+        }
+
+        .reset-btn:hover {
+            background: #c82333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .message-success {
+            color: green;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .message-error {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Student Management</h2>
+
+    <!-- 🔔 Thông báo -->
+    <p class="message-success" th:if="${success}" th:text="${success}"></p>
+    <p class="message-error" th:if="${message}" th:text="${message}"></p>
+
+    <!-- 🔍 SEARCH -->
+    <h3>Tìm sinh viên theo ID</h3>
+    <form action="/students/search" method="get">
+        <div class="form-group">
+            <input type="number" name="id" placeholder="Nhập ID..." required>
+        </div>
+        <button class="search-btn" type="submit">Search</button>
+        <a href="/students/view">
+            <button type="button" class="reset-btn">Load lại</button>
+        </a>
+    </form>
+
+    <hr>
+
+    <!-- ➕ ADD -->
+    <h3>Thêm sinh viên</h3>
+    <form th:action="@{/students/save}" th:object="${student}" method="post">
+        <div class="form-group">
+            <input type="text" th:field="*{name}" placeholder="Tên sinh viên" required>
+        </div>
+
+        <div class="form-group">
+            <input type="email" th:field="*{email}" placeholder="Email" required>
+        </div>
+
+        <div class="form-group">
+            <input type="number" th:field="*{age}" placeholder="Tuổi" required>
+        </div>
+
+        <button type="submit">Add Student</button>
+    </form>
+
+    <hr>
+
+    <!-- 📋 LIST -->
+    <h3>Danh sách sinh viên</h3>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Age</th>
+        </tr>
+
+        <tr th:each="s : ${list}">
+            <td th:text="${s.id}"></td>
+            <td th:text="${s.name}"></td>
+            <td th:text="${s.email}"></td>
+            <td th:text="${s.age}"></td>
+        </tr>
+    </table>
+
+</div>
+
+</body>
+</html>
