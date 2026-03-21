@@ -5,6 +5,7 @@ import com.example.studentapp.service.StudentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +49,16 @@ public class StudentController {
         return "students";
     }
     @PostMapping("/save")
-    public String saveStudent(Student student) {
+    public String saveStudent(@ModelAttribute Student student, RedirectAttributes redirectAttributes) {
 
         if(student.getName() == null || student.getName().isEmpty()){
             return "redirect:/students/view";
         }
 
         service.save(student);
+
+        redirectAttributes.addFlashAttribute("success", " Thêm sinh viên thành công!");
+
         return "redirect:/students/view";
     }
     @GetMapping
