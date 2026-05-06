@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">AI Chat</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-1: #07111f;
+        --bg-2: #0e1a30;
+        --panel: rgba(8, 15, 28, 0.82);
+        --panel-strong: rgba(11, 19, 35, 0.96);
+        --line: rgba(148, 163, 184, 0.14);
+        --text: #eef2ff;
+        --muted: #94a3b8;
+        --accent: #4ade80;
+        --accent-2: #38bdf8;
+        --danger: #fb7185;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(56, 189, 248, 0.24), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(74, 222, 128, 0.16), transparent 26%),
+          linear-gradient(135deg, #030712, var(--bg-1) 40%, var(--bg-2));
+        padding: 24px;
+      }
+
+      .app {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero,
+      .workspace,
+      .composer {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.4);
+      }
+
+      .hero {
+        border-radius: 28px;
+        padding: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .eyebrow-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+
+      h1 {
+        margin: 18px 0 10px;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        letter-spacing: -0.04em;
+        line-height: 1.02;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 70ch;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .meta-row {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.62);
+        color: #dbeafe;
+        font-size: 0.9rem;
+      }
+
+      .workspace {
+        border-radius: 28px;
+        overflow: hidden;
+      }
+
+      .workspace-head {
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--line);
+        background: rgba(15, 23, 42, 0.35);
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.12);
+      }
+
+      .workspace-body {
+        padding: 22px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .quick-prompts {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .prompt-btn {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.72);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .prompt-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(56, 189, 248, 0.5);
+        background: rgba(15, 23, 42, 0.92);
+      }
+
+      .chat-box {
+        min-height: 480px;
+        max-height: 62vh;
+        overflow: auto;
+        display: grid;
+        gap: 14px;
+        padding-right: 4px;
+      }
+
+      .message {
+        max-width: min(760px, 88%);
+        padding: 14px 16px;
+        border-radius: 18px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-word;
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .message.user {
+        margin-left: auto;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.96), rgba(74, 222, 128, 0.9));
+        color: #06111f;
+        border-bottom-right-radius: 6px;
+      }
+
+      .message.assistant {
+        background: var(--panel-strong);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-bottom-left-radius: 6px;
+      }
+
+      .message.error {
+        background: rgba(127, 29, 29, 0.56);
+        border: 1px solid rgba(248, 113, 113, 0.35);
+        color: #fee2e2;
+      }
+
+      .message .label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(148, 163, 184, 0.9);
+      }
+
+      .message.user .label {
+        color: rgba(6, 17, 31, 0.8);
+      }
+
+      .composer {
+        border-radius: 24px;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .composer-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 78px;
+        resize: vertical;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        padding: 14px 16px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--text);
+        outline: none;
+        font: inherit;
+      }
+
+      textarea:focus {
+        border-color: rgba(56, 189, 248, 0.8);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+      }
+
+      .primary-button,
+      .secondary-button {
+        border: 0;
+        border-radius: 16px;
+        padding: 0 18px;
+        min-height: 52px;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          opacity 0.15s ease;
+      }
+
+      .primary-button {
+        min-width: 132px;
+        color: #03111f;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+
+      .secondary-button {
+        color: var(--text);
+        background: transparent;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .primary-button:hover,
+      .secondary-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .primary-button:disabled,
+      .secondary-button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        transform: none;
+      }
+
+      .composer-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .hint {
+        line-height: 1.5;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        body {
+          padding: 12px;
+        }
+
+        .hero,
+        .workspace,
+        .composer {
+          border-radius: 20px;
+        }
+
+        .workspace-body,
+        .hero {
+          padding: 18px;
+        }
+
+        .composer-row {
+          grid-template-columns: 1fr;
+        }
+
+        .primary-button,
+        .secondary-button {
+          width: 100%;
+        }
+
+        .message {
+          max-width: 94%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <section class="hero fade-in">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> Spring AI Chat</span>
+        <h1 th:text="${pageHeading}">AI Chat với Spring AI</h1>
+        <p th:text="${pageDescription}">
+          Nhập câu hỏi bên dưới để chat với Gemini thông qua Spring AI và một UI gọn, rõ, dễ dùng.
+        </p>
+        <div class="meta-row">
+          <span class="chip">POST /api/chat</span>
+          <span class="chip">Enter để gửi, Shift + Enter để xuống dòng</span>
+          <span class="chip" th:text="${apiKeyHint}">Cấu hình key qua biến môi trường</span>
+        </div>
+      </section>
+
+      <section class="workspace fade-in">
+        <div class="workspace-head">
+          <div class="status">
+            <span class="status-dot"></span>
+            <span id="statusText">Sẵn sàng trả lời</span>
+          </div>
+          <button id="resetButton" class="secondary-button" type="button">Bắt đầu cuộc chat mới</button>
+        </div>
+
+        <div class="workspace-body">
+          <div class="quick-prompts" aria-label="Gợi ý câu hỏi">
+            <button class="prompt-btn" type="button" data-prompt="Giải thích ngắn gọn Spring Boot là gì.">Spring Boot là gì?</button>
+            <button class="prompt-btn" type="button" data-prompt="Viết cho mình một CRUD đơn giản với Spring MVC.">CRUD Spring MVC</button>
+            <button class="prompt-btn" type="button" data-prompt="So sánh GET và POST trong REST API.">GET vs POST</button>
+            <button class="prompt-btn" type="button" data-prompt="Cho mình ví dụ xử lý ngoại lệ trong Java 17.">Exception Java 17</button>
+          </div>
+
+          <div id="chatBox" class="chat-box" aria-live="polite" aria-label="Khung hội thoại"></div>
+        </div>
+      </section>
+
+      <form id="chatForm" class="composer fade-in">
+        <div class="composer-row">
+          <textarea
+            id="messageInput"
+            placeholder="Nhập câu hỏi của bạn..."
+            rows="3"
+            autocomplete="off"
+            spellcheck="true"
+          ></textarea>
+          <button id="sendButton" class="primary-button" type="submit">Gửi</button>
+        </div>
+        <div class="composer-footer">
+          <div class="hint">Giao diện này gọi trực tiếp backend Spring Boot, không cần frontend riêng.</div>
+          <div class="hint">Nếu thấy lỗi, kiểm tra lại `GEMINI_API_KEY` và cấu hình Spring AI.</div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const chatBox = document.getElementById("chatBox");
+      const chatForm = document.getElementById("chatForm");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const resetButton = document.getElementById("resetButton");
+      const statusText = document.getElementById("statusText");
+      const promptButtons = document.querySelectorAll("[data-prompt]");
+
+      function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function createMessage(text, role) {
+        const message = document.createElement("article");
+        message.className = `message ${role}`;
+
+        const label = document.createElement("span");
+        label.className = "label";
+        label.textContent = role === "user" ? "Bạn" : role === "error" ? "Lỗi" : "AI";
+
+        const content = document.createElement("div");
+        content.textContent = text;
+
+        message.append(label, content);
+        chatBox.appendChild(message);
+        scrollToBottom();
+        return content;
+      }
+
+      function setBusy(busy) {
+        sendButton.disabled = busy;
+        messageInput.disabled = busy;
+        resetButton.disabled = busy;
+        statusText.textContent = busy ? "Đang tạo phản hồi..." : "Sẵn sàng trả lời";
+      }
+
+      function seedConversation() {
+        if (chatBox.childElementCount === 0) {
+          createMessage("Xin chào. Hãy nhập câu hỏi để bắt đầu chat.", "assistant");
+        }
+      }
+
+      seedConversation();
+
+      async function sendMessage(rawText) {
+        const message = rawText.trim();
+        if (!message) {
+          return;
+        }
+
+        createMessage(message, "user");
+        messageInput.value = "";
+        setBusy(true);
+
+        const loadingContent = createMessage("Đang suy nghĩ...", "assistant");
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ message }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          loadingContent.textContent = data.reply || "Không nhận được phản hồi từ AI.";
+        } catch (error) {
+          loadingContent.textContent =
+            "Không gọi được API. Kiểm tra `GEMINI_API_KEY`, `spring.ai.openai.base-url` và ứng dụng backend.";
+          loadingContent.parentElement.classList.add("error");
+        } finally {
+          setBusy(false);
+          messageInput.focus();
+          scrollToBottom();
+        }
+      }
+
+      chatForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        sendMessage(messageInput.value);
+      });
+
+      messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          chatForm.requestSubmit();
+        }
+      });
+
+      promptButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          messageInput.value = button.dataset.prompt || "";
+          messageInput.focus();
+        });
+      });
+
+      resetButton.addEventListener("click", () => {
+        chatBox.innerHTML = "";
+        seedConversation();
+        messageInput.value = "";
+        messageInput.focus();
+      });
+    </script>
+  </body>
+</html>
